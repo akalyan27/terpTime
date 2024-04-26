@@ -14,6 +14,7 @@ def get_departments():
         prefix = result.find("span", class_="prefix-abbrev").text
         dep_prefix.append(prefix);
 
+    print(dep_prefix)
     return dep_prefix
 
 def get_courses(department): 
@@ -21,17 +22,15 @@ def get_courses(department):
     page = requests.get(URL)
 
     soup = BeautifulSoup(page.content, "html.parser")
+    #courses = soup.find_all("div", class_="course")
+    coursenames = soup.find_all("div", class_= "course-id")
 
-    results = soup.find_all("div", class_="course-info")
-    courses = []
-    for result in results:
-        course_num = result.find("span", class_="course-id").text
-        course_name = result.find("span", class_="course-title").text
-        course_credits = result.find("span", class_="course-min-credits").text
-        course = Course(course_num, course_name, course_credits)
-        courses.append(course)
+    list_of_courses = []
 
-    return courses
+    for course in coursenames:
+        list_of_courses.append(course.text)
+
+    print(list_of_courses);
 
 class Department: 
     courses = [] ## 
@@ -40,7 +39,6 @@ class Department:
         self.name = name
         self.courses = courses
 
-
-
-class Course: 
+#get_departments()
+get_courses("CMSC");
 
