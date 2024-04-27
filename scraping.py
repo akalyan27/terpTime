@@ -1,5 +1,29 @@
 import requests
 from bs4 import BeautifulSoup
+import json
+
+class Department: 
+    ## name-> string
+    ## courses -> Course[]
+    def __init__(self, name, courses):
+        self.name = name
+        self.courses = courses
+
+class Course: 
+    ## course_name -> string 
+    ## sections -> Sections[]
+    def __init__(self, course_name, sections):
+        self.course_name = course_name
+        self.sections = sections
+
+class Section: 
+    ## section_num -> num
+    ## professor_name -> string
+    def __init__(self, section_num, professor_name):
+        self.section_num = section_num
+        self.professor_name = professor_name
+
+
 
 def get_departments(): 
     URL = "https://app.testudo.umd.edu/soc/"
@@ -9,36 +33,41 @@ def get_departments():
 
     results = soup.find_all("div", class_="course-prefix")
 
-    dep_prefix = []
     for result in results:
         prefix = result.find("span", class_="prefix-abbrev").text
-        dep_prefix.append(prefix);
 
-    print(dep_prefix)
-    return dep_prefix
+        with open('course_data.json','r+') as file:
+            file_data = json.load(file)
+            file_data[prefix] = []
+            file.seek(0)
+            json.dump(file_data, file, indent = 4)
 
-def get_courses(department): 
-    URL = "https://app.testudo.umd.edu/soc/202408/" + department
-    page = requests.get(URL)
+        write_courses(prefix)
 
-    soup = BeautifulSoup(page.content, "html.parser")
-    #courses = soup.find_all("div", class_="course")
-    coursenames = soup.find_all("div", class_= "course-id")
 
-    list_of_courses = []
+def write_courses(department): 
 
-    for course in coursenames:
-        list_of_courses.append(course.text)
+    APIURL = 'https://api.umd.io/v1/courses?dept_id=%s'
+    courses = requests.get(url = APIURL % department).json()
 
-    print(list_of_courses);
+    for course in courses:
+        imp_data = {}
+        imp_data["course_id"] = course["course_id"]
+        imp_data["sections"] = course["sections"]
 
-class Department: 
-    courses = [] ## 
+        with open('course_data.json','r+') as file:
+            file_data = json.load(file)
+            file_data[department].append(imp_data)
+            file.seek(0)
+            json.dump(file_data, file, indent = 4)
 
-    def __init__(self, name, courses):
-        self.name = name
-        self.courses = courses
 
-#get_departments()
-get_courses("CMSC");
+def main():
+    get_departments()
+
+
+if __name__ == '__main__':
+    main()
+
+
 
