@@ -37,7 +37,24 @@ def write_courses(department):
             file_data[department].append(imp_data)
             file.seek(0)
             json.dump(file_data, file, indent = 4)
+        
+        for section in course["sections"]:
+            write_times_and_instructors(department, section)
 
+
+def write_times_and_instructors(department, section_id):
+    APIURL = 'https://api.umd.io/v1/courses/sections/%s'
+    section = requests.get(url = APIURL % section_id).json()
+    
+    imp_data = {}
+    imp_data["meetings"] = section["meetings"]
+    imp_data["instructors"] = section["instructors"]
+
+    with open('course_data.json','r+') as file:
+            file_data = json.load(file)
+            file_data[department][section_id].append(imp_data)
+            file.seek(0)
+            json.dump(file_data, file, indent = 4)
 
 def main():
     get_departments()
